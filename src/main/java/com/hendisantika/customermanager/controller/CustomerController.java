@@ -39,6 +39,6 @@ public class CustomerController {
     public String newCustomerForm(Map<String, Object> model) {
         Customer customer = new Customer();
         model.put("customer", customer);
-        return "new_customer";
+        return "newCustomer";
     }
 }
