@@ -59,4 +59,10 @@ public class CustomerController {
 
         return mav;
     }
+
+    @RequestMapping("/delete")
+    public String deleteCustomerForm(@RequestParam long id) {
+        customerService.delete(id);
+        return "redirect:/";
+    }
 }
