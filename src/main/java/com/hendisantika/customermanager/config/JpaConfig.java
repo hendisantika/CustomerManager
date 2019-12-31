@@ -19,7 +19,7 @@ import javax.persistence.EntityManagerFactory;
  * Time: 06.55
  */
 @Configuration
-@EnableJpaRepositories(basePackages = {"com.hendisantika.customermanager.entity"})
+@EnableJpaRepositories(basePackages = {"com.hendisantika.customermanager"})
 @EnableTransactionManagement
 public class JpaConfig {
     @Bean
