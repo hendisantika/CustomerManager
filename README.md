@@ -13,6 +13,11 @@ delete, and search customer records using a clean MVC architecture with modern J
 
 - **CRUD Operations**: Complete Create, Read, Update, and Delete functionality for customer records
 - **Search Functionality**: Search customers by keyword
+- **Docker Support**: Full Docker and Docker Compose support for easy deployment
+    - Multi-stage Dockerfile for optimized image size
+    - MySQL 9.4.0 container with persistent storage
+    - Automated database initialization with sample data
+    - Health checks and proper container orchestration
 - **Modern Java 25**: Leverages the latest Java features and performance improvements
 - **Jakarta EE Compatible**: Fully migrated to Jakarta EE namespace (jakarta.*)
 - **Spring Framework 6**: Uses the latest Spring Framework with enhanced features
@@ -54,6 +59,16 @@ delete, and search customer records using a clean MVC architecture with modern J
 - **Jakarta JSP API**: 4.0.0
 - **Jakarta JSTL**: 3.0.1 (GlassFish implementation)
 
+### Docker & Deployment
+
+- **Docker**: Multi-stage builds for optimized images
+- **MySQL Server** (Docker): 9.4.0
+- **Base Images**:
+    - Build: Maven 3.9 with Eclipse Temurin JDK 25 on Alpine Linux
+    - Runtime: Tomcat 11.0 with JDK 25
+- **Docker Compose**: Orchestration for MySQL 9.4.0 and Spring app
+- **Container Features**: Health checks, persistent volumes, auto-restart
+
 ## Project Structure
 
 ```
@@ -82,6 +97,12 @@ CustomerManager/
 │   │               └── search.jsp
 │   └── META-INF/
 │       └── persistence.xml                  # JPA persistence configuration
+├── init-db/
+│   └── 01-init.sql                          # MySQL initialization script
+├── Dockerfile                               # Multi-stage Docker build
+├── docker-compose.yml                       # Docker Compose orchestration
+├── persistence-docker.xml                   # Docker-specific JPA config
+├── .dockerignore                            # Docker build exclusions
 ├── pom.xml                                  # Maven configuration
 └── README.md
 ```
@@ -117,6 +138,7 @@ To change the database configuration, edit the `src/META-INF/persistence.xml` fi
 
 ## Prerequisites
 
+### For Local Development
 - **Java 25** or higher
 - **Maven 3.9** or higher
 - **MySQL Server 8.0** or higher
@@ -124,7 +146,108 @@ To change the database configuration, edit the `src/META-INF/persistence.xml` fi
     - **Important**: Tomcat 10+ is required for Jakarta EE support. Older Tomcat versions (9.x or below) use javax.*
       packages and are not compatible.
 
+### For Docker Deployment (Recommended)
+
+- **Docker**: 20.10 or higher
+- **Docker Compose**: 2.0 or higher
+
+No need to install Java, Maven, MySQL, or Tomcat when using Docker!
+
 ## Installation & Setup
+
+You can deploy this application in two ways: using Docker (recommended) or traditional local deployment.
+
+---
+
+## Option 1: Docker Deployment (Recommended)
+
+This is the fastest and easiest way to get the application running!
+
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd CustomerManager
+```
+
+### 2. Start the Application
+
+```bash
+docker compose up -d
+```
+
+This single command will:
+
+- Build the Spring MVC application using Maven and Java 25
+- Create a MySQL 9.4.0 database container
+- Deploy the application to Tomcat 11
+- Set up networking between containers
+- Initialize the database with sample data
+
+### 3. Access the Application
+
+Open your browser and navigate to:
+
+```
+http://localhost:8080
+```
+
+The application will be ready with 5 sample customers already loaded!
+
+### 4. Manage Docker Containers
+
+**View logs:**
+
+```bash
+# View all logs
+docker compose logs -f
+
+# View app logs only
+docker compose logs -f app
+
+# View MySQL logs only
+docker compose logs -f mysql
+```
+
+**Stop the application:**
+
+```bash
+docker compose down
+```
+
+**Stop and remove all data (including database):**
+
+```bash
+docker compose down -v
+```
+
+**Rebuild after code changes:**
+
+```bash
+docker compose up -d --build
+```
+
+### Docker Architecture
+
+The Docker setup includes:
+
+- **MySQL Container**: MySQL 9.4.0 database server
+    - Port: 3306
+    - Database: sales
+    - User: root/root
+    - Persistent volume for data storage
+    - Health checks for reliability
+    - Auto-initialization with sample data
+
+- **Spring Application Container**: Tomcat 11 with Java 25
+    - Port: 8080
+    - Multi-stage build (Maven build + Tomcat runtime)
+    - Optimized image size using Alpine Linux for build stage
+    - Automatic database connection with health check waiting
+
+---
+
+## Option 2: Local Development Setup
 
 ### 1. Clone the Repository
 
@@ -257,6 +380,29 @@ Java-based configuration for JPA, entity manager factory, and transaction manage
 
 Configures Spring MVC components, view resolvers, and static resource handling.
 
+### Docker Files
+
+#### Dockerfile
+
+Multi-stage Dockerfile that:
+
+1. **Build stage**: Uses Maven 3.9 with Eclipse Temurin Java 25 on Alpine Linux to compile the application
+2. **Runtime stage**: Uses Tomcat 11 with JDK 25 to run the application
+3. Optimizes image size by separating build and runtime environments
+
+#### docker-compose.yml
+
+Docker Compose configuration that orchestrates:
+
+1. **MySQL 9.4.0 container**: Database server with health checks
+2. **Application container**: Spring MVC app running on Tomcat 11
+3. **Network configuration**: Bridge network for container communication
+4. **Volume management**: Persistent storage for MySQL data
+
+#### persistence-docker.xml
+
+Docker-specific JPA configuration that uses the MySQL container hostname instead of localhost.
+
 ## Jakarta EE Migration Notes
 
 This project has been fully migrated from Java EE (javax.*) to Jakarta EE (jakarta.*). Key changes include:
@@ -334,8 +480,86 @@ This project has been fully migrated from Java EE (javax.*) to Jakarta EE (jakar
 
 This project is created for educational and demonstration purposes.
 
+## Docker Quick Reference
+
+### Essential Commands
+
+```bash
+# Start the application (builds images if needed)
+docker compose up -d
+
+# View logs in real-time
+docker compose logs -f
+
+# Stop the application
+docker compose down
+
+# Stop and remove all data (including database)
+docker compose down -v
+
+# Rebuild after code changes
+docker compose up -d --build
+
+# Restart just the app container
+docker compose restart app
+
+# Access MySQL container shell
+docker compose exec mysql mysql -uroot -proot sales
+
+# View running containers
+docker compose ps
+
+# View container resource usage
+docker compose stats
+```
+
+### Troubleshooting Docker
+
+**Container won't start:**
+
+```bash
+# Check logs
+docker compose logs app
+docker compose logs mysql
+
+# Verify containers status
+docker compose ps
+```
+
+**Database connection errors:**
+
+```bash
+# Ensure MySQL is healthy
+docker compose ps mysql
+
+# Check MySQL logs
+docker compose logs mysql
+
+# Restart MySQL
+docker compose restart mysql
+```
+
+**Port already in use:**
+
+```bash
+# Find what's using port 8080 or 3306
+lsof -i :8080
+lsof -i :3306
+
+# Change ports in docker-compose.yml if needed
+```
+
+**Clear everything and start fresh:**
+
+```bash
+docker compose down -v
+docker system prune -a
+docker compose up -d --build
+```
+
 ## Acknowledgments
 
 - Spring Framework team for the excellent documentation
 - Hibernate team for the robust ORM solution
 - MySQL team for the reliable database system
+- Docker and containerization community for deployment best practices
