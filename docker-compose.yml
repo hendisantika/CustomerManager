@@ -1,0 +1,54 @@
+services:
+  # MySQL 9.4.0 Database
+  mysql:
+    image: mysql:9.4.0
+    container_name: customermanager-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sales
+      MYSQL_USER: appuser
+      MYSQL_PASSWORD: apppassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - customermanager-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Spring MVC Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: customermanager-app
+    restart: always
+    ports:
+      - "8080:8080"
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: sales
+      DB_USER: root
+      DB_PASSWORD: root
+      JAVA_OPTS: "-Xms512m -Xmx1024m"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - customermanager-network
+
+volumes:
+  mysql-data:
+    driver: local
+
+networks:
+  customermanager-network:
+    driver: bridge
