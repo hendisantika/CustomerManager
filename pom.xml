@@ -12,7 +12,7 @@
     <properties>
         <maven.compiler.target>25</maven.compiler.target>
         <maven.compiler.source>25</maven.compiler.source>
-        <spring.version>7.0.7</spring.version>
+        <spring.version>7.0.8</spring.version>
         <hibernate.version>7.4.0.Final</hibernate.version>
     </properties>
 
